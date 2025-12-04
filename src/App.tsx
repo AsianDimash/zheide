@@ -4,7 +4,7 @@ import ViewSwitcher from './components/ViewSwitcher';
 import AuthPage from './components/AuthPage';
 import { ConfigState, ViewConfig } from './types';
 import { SketchfabService } from './services/sketchfabService';
-import { generateTexture } from './services/canvasService';
+import { generateTexture, generateMockup } from './services/canvasService';
 import { supabase } from './services/supabaseClient';
 import { logAction } from './services/logger';
 import { Loader2 } from 'lucide-react';
@@ -130,16 +130,25 @@ function App() {
   };
 
   const handleDownload = async () => {
-    const textureBase64 = await generateTexture(config);
-    const link = document.createElement('a');
-    link.href = textureBase64;
-    link.download = 'mening-zheidem.png';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    try {
+      if (!sketchfabService.current) return;
 
-    if (session) {
-      logAction(session.user.id, session.user.email, 'download_design', 'User downloaded texture');
+      // Capture screenshot from the 3D viewer
+      const textureBase64 = await sketchfabService.current.getScreenshot(1024, 1024);
+
+      const link = document.createElement('a');
+      link.href = textureBase64;
+      link.download = 'mening-zheidem-3d.png';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
+      if (session) {
+        logAction(session.user.id, session.user.email, 'download_design', 'User downloaded 3D screenshot');
+      }
+    } catch (e) {
+      console.error("Screenshot failed", e);
+      setError("Суретті жүктеу сәтсіз аяқталды.");
     }
   };
 

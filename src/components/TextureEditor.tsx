@@ -240,7 +240,7 @@ const TextureEditor: React.FC<TextureEditorProps> = ({ viewConfig, setViewConfig
 
     return (
         <div
-            className="w-full aspect-square bg-white rounded-lg border border-gray-200 shadow-inner relative overflow-hidden select-none"
+            className="w-full aspect-[1/2] bg-white rounded-lg border border-gray-200 shadow-inner relative overflow-hidden select-none mx-auto max-h-[60vh]"
             ref={containerRef}
         >
 

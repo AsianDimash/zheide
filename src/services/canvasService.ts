@@ -7,7 +7,7 @@ import { ConfigState, ViewConfig } from '../types';
  */
 export const generateTexture = async (config: ConfigState): Promise<string> => {
   const canvas = document.createElement('canvas');
-  const size = 2048; 
+  const size = 2048;
   canvas.width = size;
   canvas.height = size;
   const ctx = canvas.getContext('2d');
@@ -31,85 +31,149 @@ export const generateTexture = async (config: ConfigState): Promise<string> => {
 };
 
 const drawView = async (
-    ctx: CanvasRenderingContext2D, 
-    viewConfig: ViewConfig, 
-    offsetX: number, 
-    offsetY: number, 
-    width: number, 
-    height: number
+  ctx: CanvasRenderingContext2D,
+  viewConfig: ViewConfig,
+  offsetX: number,
+  offsetY: number,
+  width: number,
+  height: number
 ) => {
-    // Clip to the specific view area so elements don't bleed
+  // Clip to the specific view area so elements don't bleed
+  ctx.save();
+  ctx.beginPath();
+  ctx.rect(offsetX, offsetY, width, height);
+  ctx.clip();
+
+  // -- Draw Image --
+  if (viewConfig.image.src) {
+    try {
+      const img = await loadImage(viewConfig.image.src);
+      const { x, y, scale, rotation } = viewConfig.image.transform;
+
+      // Normalized sizing relative to the VIEW width (not full texture)
+      // Base width = 50% of the view width
+      const aspectRatio = img.width / img.height;
+      const baseWidth = width * 0.5;
+      const baseHeight = baseWidth / aspectRatio;
+
+      const drawWidth = baseWidth * scale;
+      const drawHeight = baseHeight * scale;
+
+      // Position within the view area
+      // x/y are percentages (0-100) of the view area
+      const posX = offsetX + (x / 100) * width;
+      const posY = offsetY + (y / 100) * height;
+
+      ctx.save();
+      ctx.translate(posX, posY);
+      ctx.rotate((rotation * Math.PI) / 180);
+      ctx.drawImage(img, -drawWidth / 2, -drawHeight / 2, drawWidth, drawHeight);
+      ctx.restore();
+
+    } catch (e) {
+      console.error('Failed to draw image', e);
+    }
+  }
+
+  // -- Draw Text --
+  if (viewConfig.text.content) {
+    const { x, y, scale, rotation } = viewConfig.text.transform;
+    const { content, color, fontFamily, fontSize } = viewConfig.text;
+
+    const posX = offsetX + (x / 100) * width;
+    const posY = offsetY + (y / 100) * height;
+
+    // Scale font size relative to width
+    // Base size multiplier
+    const actualFontSize = fontSize * (width / 100) * scale;
+
     ctx.save();
-    ctx.beginPath();
-    ctx.rect(offsetX, offsetY, width, height);
-    ctx.clip();
+    ctx.translate(posX, posY);
+    ctx.rotate((rotation * Math.PI) / 180);
 
-    // -- Draw Image --
-    if (viewConfig.image.src) {
-        try {
-            const img = await loadImage(viewConfig.image.src);
-            const { x, y, scale, rotation } = viewConfig.image.transform;
+    ctx.font = `bold ${actualFontSize}px ${fontFamily}`;
+    ctx.fillStyle = color;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(content, 0, 0);
 
-            // Normalized sizing relative to the VIEW width (not full texture)
-            // Base width = 50% of the view width
-            const aspectRatio = img.width / img.height;
-            const baseWidth = width * 0.5; 
-            const baseHeight = baseWidth / aspectRatio;
+    ctx.restore();
+  }
 
-            const drawWidth = baseWidth * scale;
-            const drawHeight = baseHeight * scale;
-
-            // Position within the view area
-            // x/y are percentages (0-100) of the view area
-            const posX = offsetX + (x / 100) * width;
-            const posY = offsetY + (y / 100) * height;
-
-            ctx.save();
-            ctx.translate(posX, posY);
-            ctx.rotate((rotation * Math.PI) / 180);
-            ctx.drawImage(img, -drawWidth / 2, -drawHeight / 2, drawWidth, drawHeight);
-            ctx.restore();
-
-        } catch (e) {
-            console.error('Failed to draw image', e);
-        }
-    }
-
-    // -- Draw Text --
-    if (viewConfig.text.content) {
-        const { x, y, scale, rotation } = viewConfig.text.transform;
-        const { content, color, fontFamily, fontSize } = viewConfig.text;
-
-        const posX = offsetX + (x / 100) * width;
-        const posY = offsetY + (y / 100) * height;
-
-        // Scale font size relative to width
-        // Base size multiplier
-        const actualFontSize = fontSize * (width / 100) * scale;
-
-        ctx.save();
-        ctx.translate(posX, posY);
-        ctx.rotate((rotation * Math.PI) / 180);
-        
-        ctx.font = `bold ${actualFontSize}px ${fontFamily}`;
-        ctx.fillStyle = color;
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        ctx.fillText(content, 0, 0);
-        
-        ctx.restore();
-    }
-
-    ctx.restore(); // Restore clipping
+  ctx.restore(); // Restore clipping
 };
 
 // Helper to load image async
 const loadImage = (src: string): Promise<HTMLImageElement> => {
   return new Promise((resolve, reject) => {
     const img = new Image();
-    img.crossOrigin = 'Anonymous'; 
+    img.crossOrigin = 'Anonymous';
     img.onload = () => resolve(img);
     img.onerror = (e) => reject(e);
     img.src = src;
   });
+};
+
+/**
+ * Generates a visual mockup of the T-shirt with the design applied.
+ * Uses a vector path to draw a T-shirt shape.
+ */
+export const generateMockup = async (config: ConfigState): Promise<string> => {
+  const canvas = document.createElement('canvas');
+  const width = 1000;
+  const height = 1000;
+  canvas.width = width;
+  canvas.height = height;
+  const ctx = canvas.getContext('2d');
+
+  if (!ctx) throw new Error('Failed to get 2D context');
+
+  // -- Draw T-Shirt Shape --
+  ctx.save();
+  ctx.translate(width / 2, height / 2);
+  // Scale to fit
+  const scale = 0.8;
+  ctx.scale(scale, scale);
+  ctx.translate(-500, -500); // Center the 1000x1000 path
+
+  ctx.beginPath();
+  // Simple T-Shirt Path (Approximate)
+  ctx.moveTo(280, 200); // Left Neck Start
+  ctx.quadraticCurveTo(500, 280, 720, 200); // Neck Curve
+  ctx.lineTo(850, 250); // Right Shoulder
+  ctx.lineTo(950, 450); // Right Sleeve Outer
+  ctx.lineTo(820, 500); // Right Sleeve Inner
+  ctx.lineTo(820, 900); // Right Side
+  ctx.lineTo(180, 900); // Bottom
+  ctx.lineTo(180, 500); // Left Side
+  ctx.lineTo(50, 450);  // Left Sleeve Inner
+  ctx.lineTo(150, 250); // Left Sleeve Outer
+  ctx.lineTo(280, 200); // Left Shoulder
+  ctx.closePath();
+
+  // Fill with Base Color
+  ctx.fillStyle = config.baseColor;
+  ctx.fill();
+
+  // Add some shading/stroke
+  ctx.strokeStyle = 'rgba(0,0,0,0.1)';
+  ctx.lineWidth = 5;
+  ctx.stroke();
+
+  // Clip to T-Shirt for design
+  ctx.clip();
+
+  // -- Draw Design (Front View) --
+  // We map the "Front" design to the chest area of the mockup
+  // The design area on the mockup is roughly x: 250-750, y: 300-800
+  const designX = 250;
+  const designY = 300;
+  const designW = 500;
+  const designH = 600;
+
+  await drawView(ctx, config.front, designX, designY, designW, designH);
+
+  ctx.restore();
+
+  return canvas.toDataURL('image/png');
 };

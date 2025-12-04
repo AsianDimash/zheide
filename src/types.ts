@@ -41,6 +41,7 @@ export interface SketchfabAPI {
   addTexture: (url: string, callback: (err: any, textureUid: string) => void) => void;
   getTextureList: (callback: (err: any, textures: any[]) => void) => void;
   setCameraLookAt: (eye: number[], target: number[], duration: number, callback?: (err: any) => void) => void;
+  getScreenShot: (width: number, height: number, mimeType: string, callback: (err: any, result: string) => void) => void;
 }
 
 export interface SketchfabMaterial {
@@ -59,7 +60,7 @@ export interface SketchfabMaterial {
         wrapS?: string;
         wrapT?: string;
       };
-      color?: number[]; 
+      color?: number[];
     };
   };
 }
