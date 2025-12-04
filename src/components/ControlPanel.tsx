@@ -71,9 +71,9 @@ const ControlPanel: React.FC<ControlPanelProps> = ({ config, setConfig, onDownlo
     const currentView = config[activeSide];
 
     return (
-        <div className="flex flex-col h-full bg-white border-r border-gray-200 w-full md:w-96 shadow-2xl z-20 overflow-hidden">
+        <div className="flex flex-col h-[45vh] md:h-full bg-white border-t md:border-t-0 md:border-r border-gray-200 w-full md:w-96 shadow-[0_-10px_40px_-15px_rgba(0,0,0,0.3)] md:shadow-2xl z-20 overflow-hidden rounded-t-3xl md:rounded-none">
             {/* Header */}
-            <div className="p-5 border-b border-gray-100 flex justify-between items-center bg-gray-50">
+            <div className="p-3 md:p-5 border-b border-gray-100 flex justify-between items-center bg-gray-50">
                 <div>
                     <h1 className="text-xl font-bold text-gray-800 tracking-tight">3D Zheide</h1>
                     <p className="text-xs text-gray-500 truncate max-w-[120px]">{user?.email}</p>
@@ -91,7 +91,7 @@ const ControlPanel: React.FC<ControlPanelProps> = ({ config, setConfig, onDownlo
 
             <div className="flex-1 overflow-y-auto custom-scrollbar">
                 {/* Navigation Tabs */}
-                <div className="flex px-5 pt-4 pb-0 gap-4 border-b border-gray-100">
+                <div className="flex px-3 md:px-5 pt-4 pb-0 gap-4 border-b border-gray-100">
                     <button
                         onClick={() => setActiveTab('design')}
                         className={`pb-3 text-sm font-medium border-b-2 transition-colors ${activeTab === 'design' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500'}`}
@@ -107,7 +107,7 @@ const ControlPanel: React.FC<ControlPanelProps> = ({ config, setConfig, onDownlo
                 </div>
 
                 {activeTab === 'design' ? (
-                    <div className="p-6 space-y-6">
+                    <div className="p-4 md:p-6 space-y-6">
 
                         {/* Side Toggle */}
                         <div className="flex bg-gray-100 p-1 rounded-lg">
@@ -134,17 +134,19 @@ const ControlPanel: React.FC<ControlPanelProps> = ({ config, setConfig, onDownlo
                                 <span className="text-[10px] bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full">Интерактивті</span>
                             </div>
 
-                            <TextureEditor
-                                viewConfig={currentView}
-                                setViewConfig={(newConfig) => {
-                                    if (typeof newConfig === 'function') {
-                                        updateActiveSide(newConfig);
-                                    } else {
-                                        updateActiveSide(() => newConfig);
-                                    }
-                                }}
-                                baseColor={config.baseColor}
-                            />
+                            <div className="w-2/3 mx-auto md:w-full">
+                                <TextureEditor
+                                    viewConfig={currentView}
+                                    setViewConfig={(newConfig) => {
+                                        if (typeof newConfig === 'function') {
+                                            updateActiveSide(newConfig);
+                                        } else {
+                                            updateActiveSide(() => newConfig);
+                                        }
+                                    }}
+                                    baseColor={config.baseColor}
+                                />
+                            </div>
 
                             <p className="text-xs text-gray-400 mt-2 flex items-center gap-1">
                                 <Info size={12} className="min-w-[12px]" />
@@ -242,7 +244,7 @@ const ControlPanel: React.FC<ControlPanelProps> = ({ config, setConfig, onDownlo
             </div>
 
             {/* Footer Actions */}
-            <div className="p-5 border-t border-gray-100 bg-gray-50">
+            <div className="p-3 md:p-5 border-t border-gray-100 bg-gray-50">
                 <button
                     onClick={onDownloadPreview}
                     className="w-full flex items-center justify-center gap-2 bg-slate-900 text-white py-3 rounded-xl hover:bg-slate-800 transition-all shadow-lg active:scale-95"
